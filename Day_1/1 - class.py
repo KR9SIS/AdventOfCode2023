@@ -128,7 +128,7 @@ class numFinder:
 
 
 if __name__ == "__main__":
-    # filename = "1_input.txt"
-    filename = "example.txt"
+    filename = "1_input.txt"  # Input for day 1 part 1
+    # filename = "example.txt"  # Specific line which I wanted to tackle
 
     lookup = numFinder(filename)
