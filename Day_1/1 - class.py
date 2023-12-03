@@ -1,6 +1,7 @@
 class numFinder:
     def __init__(self, file: str):
         self.content: list[str] = []  # Every line in the file
+        self.line: str = ""
         self.line_num: set[str] = set()  # Every number in a line
         self.num_ord: list[str] = []  # The order of the numbers in a line
         self.file_num: list[int] = []  # Every lines first and last digit put together
@@ -32,28 +33,39 @@ class numFinder:
 
         self.get_file_content(file)
         for line in self.content:
-            self.get_num(line)
-            self.get_num_ord(line)
+            self.line = line
+            self.get_num()
+            if len(self.line_num) > 1:
+                self.get_num_ord()
+            else:
+                self.num_ord = list(self.line_num)
             self.first_last()
         self.show_sum()
 
     def get_file_content(self, file):
+        """
+        Opens a file and reads it's contents into a list
+        """
         with open(filename) as file:
             for line in file:
                 self.content.append(line)
 
-    def get_num(self, line: str):
+    def get_num(self):
+        """
+        Finds every number contained in a line
+        """
         self.line_num = set()
         for number in self.DIGITS.values():
             for version in number:
-                if version in line:
+                if version in self.line:
                     self.line_num.add(version)
 
-    def get_num_ord(self, line: str):
+    def get_num_ord(self):
         """
+        Adds every number in a line to a list using accounting for these cases
         Case:
             1. Normal "f1d" extracts 1
-            2. Word "feightg" extracts 8
+            2. Word "feightg" extracts eight
             3. Digit in word "ei9ht" extracts 9
             4. Word in word "oneight" extracts one & eight
         """
@@ -66,7 +78,7 @@ class numFinder:
                 """"""
 
         curr_word = ""
-        for char in line:
+        for char in self.line:
             if char in self.line_num:  # Case 1 & 3
                 self.num_ord.append(char)  # Character is a digit
                 curr_word = ""
@@ -74,16 +86,25 @@ class numFinder:
                 curr_word += char
                 if curr_word in self.line_num:  # Case 2
                     self.num_ord.append(curr_word)
+
                     if curr_word[-1] in n_parts:
                         curr_word = curr_word[-1]  # Case 4
                     else:
                         curr_word = ""
+
                 elif curr_word in n_parts:  # Poosible case 2
                     pass
+
+                elif curr_word[-1] in n_parts:
+                    curr_word = curr_word[-1]  # Possible case 4
+
                 else:
                     curr_word = ""  # Not a case
 
     def first_last(self):
+        """
+        Combines the first and last number in a line into a single combined integer
+        """
         integers = []
         for i in self.num_ord:
             try:
@@ -99,12 +120,15 @@ class numFinder:
         self.file_num.append(int(firstNlast))
 
     def show_sum(self):
+        """
+        calculates the sum of all combined integers
+        """
         answer = sum(self.file_num)
         print(answer)
 
 
 if __name__ == "__main__":
-    filename = "1_input.txt"
-    # filename = "example.txt"
+    # filename = "1_input.txt"
+    filename = "example.txt"
 
     lookup = numFinder(filename)
