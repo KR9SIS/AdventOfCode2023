@@ -1,5 +1,5 @@
-# filename = "1_input.txt"
-filename = "example.txt"
+filename = "1_input.txt"
+# filename = "example.txt"
 
 DIGITS = {
     "zero": ["0", "zero"],
@@ -43,6 +43,7 @@ def get_file(filename):
     with open(filename) as file:
         content = []
         for line in file:
+            line = line.lower()
             content.append(line)
     return content
 
