@@ -1,8 +1,7 @@
 from string import punctuation
 
-# filename = "3_input.txt"
-
-filename = "example.txt"
+filename = "3_input.txt"
+# filename = "example.txt"
 
 
 class find_parts:
@@ -23,6 +22,7 @@ class find_parts:
             self.line2_index = line_index + 1
             self.get_two_lines()
             self.comp_lines()
+        ""
 
     def get_file_lines(self, filename):
         with open(filename) as file:
@@ -39,25 +39,58 @@ class find_parts:
         except IndexError:
             """"""
 
+    def catch(
+        self, checked_line: str, index: int, catch_widht: int, start=False, end=False
+    ):
+        val1 = catch_widht / 2
+        val2 = val1
+        if isinstance(val1, float):
+            val1 = int(val1 + 0.5)
+            val2 = int(val2 - 0.5)
+        if start:
+            checked_line[: index + val1]
+        elif end:
+            checked_line[index - val1 :]
+        else:
+            catch = checked_line[index - val1 : index + val2]
+
+        return catch
+
     def checks(self, check, checked_line, cl_index):
-        check = check.strip(punctuation)
         try:
             num = int(check)  # See if check is unbroken int i.e. not 1..2
             self.numbers_in_line[cl_index].append(num)
         except ValueError:
-            check: str = checked_line[self.string_index - 4 : self.string_index + 5]
-            curr_num = ""
-            last_num = 0
-            for i in check:
-                try:
-                    int(i)
-                    curr_num += i
-                except ValueError:
-                    if self.numbers_in_line[cl_index]:
-                        last_num = self.numbers_in_line[cl_index][-1]
-                    if last_num != curr_num:
-                        self.numbers_in_line[cl_index].append(curr_num)
-                    curr_num = ""
+            check: str = self.catch(checked_line, self.string_index, 5)
+            val = check
+            num_not_found = True
+            catch_width = 3
+            while num_not_found:
+                if val[0] in punctuation and val[-1] in punctuation:
+                    val = self.catch(val, 2, 3)
+                else:
+                    catch_width += 2
+                    val = self.catch(checked_line, self.string_index, 7)
+                    try:
+                        val = int(val.strip(punctuation))
+                        self.numbers_in_line[cl_index].append(val)
+                        num_not_found = False
+                    except ValueError:
+                        pass  # TODO Make work with unbroken numbers such as ..806.540..
+
+            ""
+
+            # chech_parts = check.split(".")
+            # for num in chech_parts:
+            #     num = num.strip(punctuation)
+            #     if num and num not in punctuation:
+            #         num = int(num)
+            #         if self.numbers_in_line[cl_index]:
+            #             last_num = self.numbers_in_line[cl_index][-1]
+            #         if last_num != num:
+            #             self.numbers_in_line[cl_index].append(num)
+            #     else:
+            #         pass
 
     def line_check(self, i, checked_line, cl_index):
         """
@@ -67,13 +100,21 @@ class find_parts:
             try:
                 int(i)  # Filter awway numbers
             except ValueError:
-                if self.string_index > 0:  # Account for index error
-                    check: str = checked_line[
-                        self.string_index - 2 : self.string_index + 1
-                    ]
+                # If neither line start nor end
+                if self.string_index != 1 and self.string_index != len(checked_line):
+                    check: str = self.catch(checked_line, self.string_index, 3)
+
                     self.checks(check, checked_line, cl_index)
-                else:
-                    check = checked_line[: self.string_index + 2]
+                # Account for index error at line start
+                elif self.string_index == 1:
+                    check = self.catch(checked_line, self.string_index, 3, start=True)
+                    self.checks(check, checked_line, cl_index)
+
+                # Account for index error at line end
+                elif self.string_index == len(checked_line):
+                    check: str = self.catch(
+                        checked_line, self.string_index, 3, end=True
+                    )
                     self.checks(check, checked_line, cl_index)
 
                     # TODO First step is to see if there are any values across or diagonally to the symbol, and then if there is I need to get that entire number.
@@ -91,10 +132,12 @@ class find_parts:
         curr_line2_index = self.line2_index
         if curr_line2_index not in self.numbers_in_line:
             self.numbers_in_line[curr_line2_index] = []
+
         for i1, i2 in zip(self.curr_line_1, self.curr_line_2):
             self.string_index += 1
             self.line_check(i1, curr_line2, curr_line2_index)
             self.line_check(i2, curr_line1, curr_line1_index)
+        self.string_index = 0
 
         ""
 
