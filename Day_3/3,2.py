@@ -76,22 +76,17 @@ class find_parts:
         If it does, then we mark it as an engine part.
         """
 
-        def cmp_index(symbol_index, line_index):
+        def cmp_index(symbol_index, line_index, part_count: list):
             checked_line = self.number_ind_in_line[line_index]
             left = symbol_index - 1
             right = symbol_index + 1
-            new_line = []
             for number, indexes in checked_line:
                 if symbol_index in indexes:
-                    self.parts.append(number)
+                    part_count.append(number)
                 elif left in indexes:
-                    self.parts.append(number)
+                    part_count.append(number)
                 elif right in indexes:
-                    self.parts.append(number)
-                else:
-                    new_line.append([number, indexes])
-
-            # self.number_ind_in_line[line_index] = new_line
+                    part_count.append(number)
 
         for key, symbols in self.symbol_ind_per_line.items():
             if symbols:
@@ -106,30 +101,20 @@ class find_parts:
                 except KeyError:
                     index_line_below = None
 
-                for symbol_index, _ in symbols:
-                    if isinstance(index_line_above, int):
-                        cmp_index(symbol_index, index_line_above)
-                    if isinstance(index_line_below, int):
-                        cmp_index(symbol_index, index_line_below)
+                for symbol_index, star in symbols:
+                    if star == "*":
+                        count = []
+                        if isinstance(index_line_above, int):
+                            cmp_index(symbol_index, index_line_above, count)
 
-                    cmp_index(symbol_index, key)
+                        if isinstance(index_line_below, int):
+                            cmp_index(symbol_index, index_line_below, count)
 
-    def catch_part(
-        self, checked_line: str, index: int, catch_widht: int, start=False, end=False
-    ):
-        val1 = catch_widht / 2
-        val2 = val1
-        if isinstance(val1, float):
-            val1 = int(val1 + 0.5)
-            val2 = int(val2 - 0.5)
-        if start:
-            checked_line[: index + val1]
-        elif end:
-            checked_line[index - val1 :]
-        else:
-            catch = checked_line[index - val1 : index + val2]
-
-        return catch
+                        cmp_index(symbol_index, key, count)
+                        if len(count) == 2:
+                            first, second = count
+                            part = first * second
+                            self.parts.append(part)
 
 
 if __name__ == "__main__":

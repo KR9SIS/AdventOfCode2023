@@ -80,7 +80,7 @@ class find_parts:
             checked_line = self.number_ind_in_line[line_index]
             left = symbol_index - 1
             right = symbol_index + 1
-            new_line = []
+
             for number, indexes in checked_line:
                 if symbol_index in indexes:
                     self.parts.append(number)
@@ -88,10 +88,6 @@ class find_parts:
                     self.parts.append(number)
                 elif right in indexes:
                     self.parts.append(number)
-                else:
-                    new_line.append([number, indexes])
-
-            # self.number_ind_in_line[line_index] = new_line
 
         for key, symbols in self.symbol_ind_per_line.items():
             if symbols:
@@ -113,23 +109,6 @@ class find_parts:
                         cmp_index(symbol_index, index_line_below)
 
                     cmp_index(symbol_index, key)
-
-    def catch_part(
-        self, checked_line: str, index: int, catch_widht: int, start=False, end=False
-    ):
-        val1 = catch_widht / 2
-        val2 = val1
-        if isinstance(val1, float):
-            val1 = int(val1 + 0.5)
-            val2 = int(val2 - 0.5)
-        if start:
-            checked_line[: index + val1]
-        elif end:
-            checked_line[index - val1 :]
-        else:
-            catch = checked_line[index - val1 : index + val2]
-
-        return catch
 
 
 if __name__ == "__main__":
