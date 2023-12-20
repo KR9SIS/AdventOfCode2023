@@ -2,6 +2,7 @@ from string import punctuation, digits
 
 filename = "3_input.txt"
 # filename = "example.txt"
+# filename = "test.txt"  # p1: 925, p2: 6756
 
 """
 Check if 
@@ -44,27 +45,29 @@ class find_parts:
             num_part = []
 
             for l_index, symbol in enumerate(line):
-                if symbol != ".":
+                if symbol in digits:
+                    # Finds every number and index of said number in the line
+                    num_part.append(symbol)
+                    corresponding_index.append(l_index)
+
+                elif symbol not in digits:
                     if symbol in self.symbols:
                         # Finds the index of every symbol in the line
                         self.symbol_ind_per_line[index].append((l_index, symbol))
-                        num_part = "".join(num_part)
-                        if num_part:
-                            numbers_in_line.append([int(num_part), corresponding_index])
-                        corresponding_index = []
-                        num_part = []
 
-                    elif symbol in digits:
-                        # Finds every number and index of said number in the line
-                        num_part.append(symbol)
-                        corresponding_index.append(l_index)
-                else:
                     num_part = "".join(num_part)
                     if num_part:
                         numbers_in_line.append([int(num_part), corresponding_index])
                     corresponding_index = []
                     num_part = []
-                self.number_ind_in_line[index] = numbers_in_line
+
+            num_part = "".join(num_part)
+            if num_part:
+                numbers_in_line.append([int(num_part), corresponding_index])
+            corresponding_index = []
+            num_part = []
+
+            self.number_ind_in_line[index] = numbers_in_line
 
     def compare_lines(self):
         """
@@ -95,12 +98,12 @@ class find_parts:
                 try:
                     self.number_ind_in_line[key - 1]
                     index_line_above = key - 1
-                except IndexError:
+                except KeyError:
                     index_line_above = None
                 try:
                     self.number_ind_in_line[key + 1]
                     index_line_below = key + 1
-                except IndexError:
+                except KeyError:
                     index_line_below = None
 
                 for symbol_index, _ in symbols:
