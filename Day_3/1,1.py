@@ -1,45 +1,117 @@
-from string import punctuation
+from string import punctuation, digits
 
 filename = "3_input.txt"
 # filename = "example.txt"
 
+"""
+Check if 
+"""
+
 
 class find_parts:
     def __init__(self) -> None:
-        self.valid_num = []
-        self.numbers_in_line: dict[int, list[int]] = {}
+        # Removes . from punctuation and makes it a set
+        self.symbols = set(list(punctuation))
+        self.symbols.remove(".")
         self.lines: list[str] = []
-        self.line_number = 0
-        self.curr_line_1: str = ""
-        self.curr_line_2: str = ""
-        self.line1_index = 0
-        self.line2_index = 0
-        self.string_index = 0
+        self.symbol_ind_per_line: dict[int, list[list[int, str]]] = {}
+        self.number_ind_in_line: dict[int, list[int, list[int]]] = {}
+        self.parts = []
 
         self.get_file_lines(filename)
-        for line_index in range(len(self.lines)):
-            self.line1_index = line_index
-            self.line2_index = line_index + 1
-            self.get_two_lines()
-            self.comp_lines()
-        ""
+        self.get_symbols_and_num_in_lines()
+        self.compare_lines()
+        parts = sum(self.parts)
+        print(parts)
 
     def get_file_lines(self, filename):
         with open(filename) as file:
             for line in file:
                 self.lines.append(line.strip())
 
-    def get_two_lines(self):
+    def get_symbols_and_num_in_lines(self):
         """
-        Finds the index of a specific line and the line below it and returns those.
+        Start by iterating over every line
+        then we check if the symbol is something other than "."
+        If it is a symbol or number, then we note that down along with it's corresponding index
         """
-        try:
-            self.curr_line_2 = self.lines[self.line2_index]
-            self.curr_line_1 = self.lines[self.line1_index]
-        except IndexError:
-            """"""
+        for index, line in enumerate(self.lines):
+            self.symbol_ind_per_line[index] = []
+            self.number_ind_in_line[index] = []
 
-    def catch(
+            numbers_in_line = []
+            corresponding_index = []
+            num_part = []
+
+            for l_index, symbol in enumerate(line):
+                if symbol != ".":
+                    if symbol in self.symbols:
+                        # Finds the index of every symbol in the line
+                        self.symbol_ind_per_line[index].append((l_index, symbol))
+                        num_part = "".join(num_part)
+                        if num_part:
+                            numbers_in_line.append([int(num_part), corresponding_index])
+                        corresponding_index = []
+                        num_part = []
+
+                    elif symbol in digits:
+                        # Finds every number and index of said number in the line
+                        num_part.append(symbol)
+                        corresponding_index.append(l_index)
+                else:
+                    num_part = "".join(num_part)
+                    if num_part:
+                        numbers_in_line.append([int(num_part), corresponding_index])
+                    corresponding_index = []
+                    num_part = []
+                self.number_ind_in_line[index] = numbers_in_line
+
+    def compare_lines(self):
+        """
+        Iterate over the symbols in each line getting its index
+        See if any number in their line the one above or below has an index equal to +-1
+        If it does, then we mark it as an engine part.
+        """
+
+        def cmp_index(symbol_index, line_index):
+            checked_line = self.number_ind_in_line[line_index]
+            left = symbol_index - 1
+            right = symbol_index + 1
+            new_line = []
+            for number, indexes in checked_line:
+                if symbol_index in indexes:
+                    self.parts.append(number)
+                elif left in indexes:
+                    self.parts.append(number)
+                elif right in indexes:
+                    self.parts.append(number)
+                else:
+                    new_line.append([number, indexes])
+
+            # self.number_ind_in_line[line_index] = new_line
+
+        for key, symbols in self.symbol_ind_per_line.items():
+            if symbols:
+                try:
+                    self.number_ind_in_line[key - 1]
+                    index_line_above = key - 1
+                except IndexError:
+                    index_line_above = None
+                try:
+                    self.number_ind_in_line[key + 1]
+                    index_line_below = key + 1
+                except IndexError:
+                    index_line_below = None
+
+                for symbol_index, _ in symbols:
+                    if isinstance(index_line_above, int):
+                        cmp_index(symbol_index, index_line_above)
+                    if isinstance(index_line_below, int):
+                        cmp_index(symbol_index, index_line_below)
+
+                    cmp_index(symbol_index, key)
+
+    def catch_part(
         self, checked_line: str, index: int, catch_widht: int, start=False, end=False
     ):
         val1 = catch_widht / 2
@@ -55,91 +127,6 @@ class find_parts:
             catch = checked_line[index - val1 : index + val2]
 
         return catch
-
-    def checks(self, check, checked_line, cl_index):
-        try:
-            num = int(check)  # See if check is unbroken int i.e. not 1..2
-            self.numbers_in_line[cl_index].append(num)
-        except ValueError:
-            check: str = self.catch(checked_line, self.string_index, 5)
-            val = check
-            num_not_found = True
-            catch_width = 3
-            while num_not_found:
-                if val[0] in punctuation and val[-1] in punctuation:
-                    val = self.catch(val, 2, 3)
-                else:
-                    catch_width += 2
-                    val = self.catch(checked_line, self.string_index, 7)
-                    try:
-                        val = int(val.strip(punctuation))
-                        self.numbers_in_line[cl_index].append(val)
-                        num_not_found = False
-                    except ValueError:
-                        pass  # TODO Make work with unbroken numbers such as ..806.540..
-
-            ""
-
-            # chech_parts = check.split(".")
-            # for num in chech_parts:
-            #     num = num.strip(punctuation)
-            #     if num and num not in punctuation:
-            #         num = int(num)
-            #         if self.numbers_in_line[cl_index]:
-            #             last_num = self.numbers_in_line[cl_index][-1]
-            #         if last_num != num:
-            #             self.numbers_in_line[cl_index].append(num)
-            #     else:
-            #         pass
-
-    def line_check(self, i, checked_line, cl_index):
-        """
-        Checks if i1 is not a "." or an integer and if it is then it checks the corresponding index of line2
-        """
-        if i != ".":
-            try:
-                int(i)  # Filter awway numbers
-            except ValueError:
-                # If neither line start nor end
-                if self.string_index != 1 and self.string_index != len(checked_line):
-                    check: str = self.catch(checked_line, self.string_index, 3)
-
-                    self.checks(check, checked_line, cl_index)
-                # Account for index error at line start
-                elif self.string_index == 1:
-                    check = self.catch(checked_line, self.string_index, 3, start=True)
-                    self.checks(check, checked_line, cl_index)
-
-                # Account for index error at line end
-                elif self.string_index == len(checked_line):
-                    check: str = self.catch(
-                        checked_line, self.string_index, 3, end=True
-                    )
-                    self.checks(check, checked_line, cl_index)
-
-                    # TODO First step is to see if there are any values across or diagonally to the symbol, and then if there is I need to get that entire number.
-
-    def comp_lines(self):
-        """
-        Iterate over line 1 and 2 and if line 1 shows something other than a "."
-        then it checks what is in line 2 and if that is a number, then logs it as a valid num
-        """
-        curr_line1 = self.curr_line_1
-        curr_line1_index = self.line1_index
-        if curr_line1_index not in self.numbers_in_line:
-            self.numbers_in_line[curr_line1_index] = []
-        curr_line2 = self.curr_line_2
-        curr_line2_index = self.line2_index
-        if curr_line2_index not in self.numbers_in_line:
-            self.numbers_in_line[curr_line2_index] = []
-
-        for i1, i2 in zip(self.curr_line_1, self.curr_line_2):
-            self.string_index += 1
-            self.line_check(i1, curr_line2, curr_line2_index)
-            self.line_check(i2, curr_line1, curr_line1_index)
-        self.string_index = 0
-
-        ""
 
 
 if __name__ == "__main__":
