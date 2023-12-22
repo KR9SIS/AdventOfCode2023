@@ -1,7 +1,8 @@
-# filename = "4_input.txt"
-filename = "example.txt"
+filename = "4_input.txt"
+# filename = "example.txt"
 
 
+# TODO Refactor, this is a HORRIBLE way to do this, and running the input for day 4 takes over an hour.
 class Scratchcards:
     """
     Game rules:
@@ -37,14 +38,10 @@ class Scratchcards:
 
     def card_counter(self):
         for cur_card in self.cards:
-            # self.count = 0
-            # self.check_summary()
             self.copies.append(cur_card)
             while self.copies:
                 self.calc_copies()
-            self.summarise(cur_card)
 
-    def check_summary(self):
         check = self.copies[0]
         raise NotImplemented
 
@@ -55,7 +52,6 @@ class Scratchcards:
 
         if win_list:
             self.copies.extend(win_list)
-            # self.count += summary
 
         else:
             wins = 0
@@ -70,24 +66,6 @@ class Scratchcards:
                     win_list.append(copies)
 
                 self.cards[card] = win_num, num, win_list, summary
-
-    def summarise(self, current_card):
-        """
-        Go through every copy created by the previous card
-
-        """
-        card_points = 0
-        win_num, num, copies, total = self.cards[current_card]
-        for copy in reversed(copies):
-            copy_win_num, copy_num, copy_copies, copy_points = self.cards[copy]
-            card_points += len(copy_copies) + 1
-            copy_points = card_points
-
-            self.cards[copy] = copy_win_num, copy_num, copy_copies, copy_points
-
-        card_points += len(copies)
-        self.cards[current_card] = win_num, num, copies, card_points
-        # self.count += card_points
 
 
 if __name__ == "__main__":
